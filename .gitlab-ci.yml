@@ -76,19 +76,19 @@ clair_scan:
     paths: [clair-scan-report.json]
     expire_in: 1 week
 
-kubesec_scan:
-  image: docker:stable
-  variables:
-    DEPLOYMENT_FILE: vul_flask-deployment.yml
-  stage: scan
-  services:
-    - docker:dind
-  script:
-    - apk add curl
-    - curl --silent --compressed --connect-timeout 5 -F file=@"${PWD}/${DEPLOYMENT_FILE}" https://kubesec.io/ >> kubesec_result.json
-  artifacts:
-    paths: [kubesec_result.json]
-    expire_in: 1 week
+# kubesec_scan:
+#   image: docker:stable
+#   variables:
+#     DEPLOYMENT_FILE: vul_flask-deployment.yml
+#   stage: scan
+#   services:
+#     - docker:dind
+#   script:
+#     - apk add curl
+#     - curl --silent --compressed --connect-timeout 5 -F file=@"${PWD}/${DEPLOYMENT_FILE}" https://kubesec.io/ >> kubesec_result.json
+#   artifacts:
+#     paths: [kubesec_result.json]
+#     expire_in: 1 week
 
 k8s_deploy:
   image: docker:stable
@@ -104,8 +104,7 @@ k8s_deploy:
     - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
     - chmod +x ./kubectl
     - mv ./kubectl /usr/local/bin/kubectl
-    - sed -i 's/_USER_/'"$DOCKER_ENV_GITLAB_USER_LOGIN"'/g' vul_flask-deployment.yml;
-    - kubectl apply -f staging-namespace.yml
+    - sed -i 's/_USER_/'"$DOCKER_ENV_GITLAB_USER_LOGIN"'/g' deployment.yml;    
     - kubectl create secret -n $KUBE_NAMESPACE docker-registry gitlab-registry --docker-server="$CI_REGISTRY" --docker-username="$CI_REGISTRY_USER" --docker-password="$CI_REGISTRY_PASSWORD" --docker-email="$GITLAB_USER_EMAIL" --dry-run -o yaml | kubectl apply -f -
-    - kubectl apply -n $KUBE_NAMESPACE -f vul_flask-deployment.yml
+    - kubectl apply -n $KUBE_NAMESPACE -f deployment.yml
 
