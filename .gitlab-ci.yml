@@ -14,7 +14,7 @@ sast_scan:
   script:
     - apk add py-pip
     - pip install bandit
-    - bandit -r -f json -o bandit_result.json app/ || true
+    - bandit -r -f json -o bandit_result.json app.py || true
   artifacts:
     paths: [bandit_result.json]
     expire_in: 1 week
